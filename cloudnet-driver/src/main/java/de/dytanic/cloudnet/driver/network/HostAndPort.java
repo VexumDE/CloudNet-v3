@@ -49,6 +49,14 @@ public class HostAndPort implements SerializableObject {
         this.port = socketAddress.getPort();
     }
 
+    public HostAndPort(String host, int port) {
+        this.host = host.trim();
+        this.port = port;
+    }
+
+    public HostAndPort() {
+    }
+
     /**
      * Tries to cast the provided socketAddress to an InetSocketAddress and returns a new HostAndPort based on it
      *
@@ -64,14 +72,6 @@ public class HostAndPort implements SerializableObject {
         throw new IllegalArgumentException("socketAddress must be instance of InetSocketAddress!");
     }
 
-    public HostAndPort(String host, int port) {
-        this.host = host.trim();
-        this.port = port;
-    }
-
-    public HostAndPort() {
-    }
-
     @Override
     public String toString() {
         return this.host + ":" + this.port;
@@ -83,6 +83,10 @@ public class HostAndPort implements SerializableObject {
 
     public int getPort() {
         return this.port;
+    }
+
+    public InetSocketAddress toInetSocketAddress() {
+        return new InetSocketAddress(this.host, this.port);
     }
 
     @Override

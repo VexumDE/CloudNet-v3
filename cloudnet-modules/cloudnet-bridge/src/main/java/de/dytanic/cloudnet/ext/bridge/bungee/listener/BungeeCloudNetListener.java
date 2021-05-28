@@ -3,16 +3,47 @@ package de.dytanic.cloudnet.ext.bridge.bungee.listener;
 import de.dytanic.cloudnet.driver.event.EventListener;
 import de.dytanic.cloudnet.driver.event.events.channel.ChannelMessageReceiveEvent;
 import de.dytanic.cloudnet.driver.event.events.network.NetworkChannelPacketReceiveEvent;
-import de.dytanic.cloudnet.driver.event.events.service.*;
+import de.dytanic.cloudnet.driver.event.events.service.CloudServiceConnectNetworkEvent;
+import de.dytanic.cloudnet.driver.event.events.service.CloudServiceDisconnectNetworkEvent;
+import de.dytanic.cloudnet.driver.event.events.service.CloudServiceInfoUpdateEvent;
+import de.dytanic.cloudnet.driver.event.events.service.CloudServiceRegisterEvent;
+import de.dytanic.cloudnet.driver.event.events.service.CloudServiceStartEvent;
+import de.dytanic.cloudnet.driver.event.events.service.CloudServiceStopEvent;
+import de.dytanic.cloudnet.driver.event.events.service.CloudServiceUnregisterEvent;
 import de.dytanic.cloudnet.ext.bridge.bungee.BungeeCloudNetHelper;
-import de.dytanic.cloudnet.ext.bridge.bungee.event.*;
-import de.dytanic.cloudnet.ext.bridge.event.*;
+import de.dytanic.cloudnet.ext.bridge.bungee.BungeeServerRegisterHelper;
+import de.dytanic.cloudnet.ext.bridge.bungee.event.BungeeBridgeConfigurationUpdateEvent;
+import de.dytanic.cloudnet.ext.bridge.bungee.event.BungeeBridgeProxyPlayerDisconnectEvent;
+import de.dytanic.cloudnet.ext.bridge.bungee.event.BungeeBridgeProxyPlayerLoginRequestEvent;
+import de.dytanic.cloudnet.ext.bridge.bungee.event.BungeeBridgeProxyPlayerLoginSuccessEvent;
+import de.dytanic.cloudnet.ext.bridge.bungee.event.BungeeBridgeProxyPlayerServerConnectRequestEvent;
+import de.dytanic.cloudnet.ext.bridge.bungee.event.BungeeBridgeProxyPlayerServerSwitchEvent;
+import de.dytanic.cloudnet.ext.bridge.bungee.event.BungeeBridgeServerPlayerDisconnectEvent;
+import de.dytanic.cloudnet.ext.bridge.bungee.event.BungeeBridgeServerPlayerLoginRequestEvent;
+import de.dytanic.cloudnet.ext.bridge.bungee.event.BungeeBridgeServerPlayerLoginSuccessEvent;
+import de.dytanic.cloudnet.ext.bridge.bungee.event.BungeeChannelMessageReceiveEvent;
+import de.dytanic.cloudnet.ext.bridge.bungee.event.BungeeCloudServiceConnectNetworkEvent;
+import de.dytanic.cloudnet.ext.bridge.bungee.event.BungeeCloudServiceDisconnectNetworkEvent;
+import de.dytanic.cloudnet.ext.bridge.bungee.event.BungeeCloudServiceInfoUpdateEvent;
+import de.dytanic.cloudnet.ext.bridge.bungee.event.BungeeCloudServiceRegisterEvent;
+import de.dytanic.cloudnet.ext.bridge.bungee.event.BungeeCloudServiceStartEvent;
+import de.dytanic.cloudnet.ext.bridge.bungee.event.BungeeCloudServiceStopEvent;
+import de.dytanic.cloudnet.ext.bridge.bungee.event.BungeeCloudServiceUnregisterEvent;
+import de.dytanic.cloudnet.ext.bridge.bungee.event.BungeeNetworkChannelPacketReceiveEvent;
+import de.dytanic.cloudnet.ext.bridge.bungee.event.BungeeServiceInfoSnapshotConfigureEvent;
+import de.dytanic.cloudnet.ext.bridge.event.BridgeConfigurationUpdateEvent;
+import de.dytanic.cloudnet.ext.bridge.event.BridgeProxyPlayerDisconnectEvent;
+import de.dytanic.cloudnet.ext.bridge.event.BridgeProxyPlayerLoginRequestEvent;
+import de.dytanic.cloudnet.ext.bridge.event.BridgeProxyPlayerLoginSuccessEvent;
+import de.dytanic.cloudnet.ext.bridge.event.BridgeProxyPlayerServerConnectRequestEvent;
+import de.dytanic.cloudnet.ext.bridge.event.BridgeProxyPlayerServerSwitchEvent;
+import de.dytanic.cloudnet.ext.bridge.event.BridgeServerPlayerDisconnectEvent;
+import de.dytanic.cloudnet.ext.bridge.event.BridgeServerPlayerLoginRequestEvent;
+import de.dytanic.cloudnet.ext.bridge.event.BridgeServerPlayerLoginSuccessEvent;
 import de.dytanic.cloudnet.ext.bridge.proxy.BridgeProxyHelper;
 import de.dytanic.cloudnet.wrapper.event.service.ServiceInfoSnapshotConfigureEvent;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.plugin.Event;
-
-import java.net.InetSocketAddress;
 
 public final class BungeeCloudNetListener {
 
@@ -30,11 +61,7 @@ public final class BungeeCloudNetListener {
             }
 
             String name = event.getServiceInfo().getServiceId().getName();
-
-            ProxyServer.getInstance().getServers().put(name, BungeeCloudNetHelper.createServerInfo(name, new InetSocketAddress(
-                    event.getServiceInfo().getConnectAddress().getHost(),
-                    event.getServiceInfo().getConnectAddress().getPort()
-            )));
+            BungeeServerRegisterHelper.registerService(name, event.getServiceInfo().getConnectAddress().toInetSocketAddress());
         }
 
         this.bungeeCall(new BungeeCloudServiceStartEvent(event.getServiceInfo()));
@@ -43,7 +70,7 @@ public final class BungeeCloudNetListener {
     @EventListener
     public void handle(CloudServiceStopEvent event) {
         if (BungeeCloudNetHelper.isServiceEnvironmentTypeProvidedForBungeeCord(event.getServiceInfo())) {
-            ProxyServer.getInstance().getServers().remove(event.getServiceInfo().getName());
+            BungeeServerRegisterHelper.unregisterService(event.getServiceInfo().getName());
             BridgeProxyHelper.cacheServiceInfoSnapshot(event.getServiceInfo());
         }
 

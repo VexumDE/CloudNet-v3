@@ -18,7 +18,6 @@ import de.dytanic.cloudnet.wrapper.Wrapper;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.plugin.Plugin;
 
-import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
@@ -63,11 +62,7 @@ public final class BungeeCloudNetBridgePlugin extends Plugin {
                 }
 
                 String name = serviceInfoSnapshot.getServiceId().getName();
-
-                super.getProxy().getServers().put(name, BungeeCloudNetHelper.createServerInfo(name, new InetSocketAddress(
-                        serviceInfoSnapshot.getConnectAddress().getHost(),
-                        serviceInfoSnapshot.getConnectAddress().getPort()
-                )));
+                BungeeServerRegisterHelper.registerService(name, serviceInfoSnapshot.getConnectAddress().toInetSocketAddress());
 
                 BridgeProxyHelper.cacheServiceInfoSnapshot(serviceInfoSnapshot);
             }

@@ -1,7 +1,6 @@
 package de.dytanic.cloudnet.ext.bridge.bungee;
 
 import com.google.common.base.Preconditions;
-import de.dytanic.cloudnet.common.logging.LogLevel;
 import de.dytanic.cloudnet.driver.network.HostAndPort;
 import de.dytanic.cloudnet.driver.service.ServiceEnvironmentType;
 import de.dytanic.cloudnet.driver.service.ServiceInfoSnapshot;
@@ -16,10 +15,7 @@ import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.PendingConnection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -27,13 +23,12 @@ import java.util.stream.Collectors;
 
 public final class BungeeCloudNetHelper {
 
-    private static int lastOnlineCount = -1;
-
     /**
      * @deprecated use {@link BridgeProxyHelper#getCachedServiceInfoSnapshot(String)} or {@link BridgeProxyHelper#cacheServiceInfoSnapshot(ServiceInfoSnapshot)}
      */
     @Deprecated
     public static final Map<String, ServiceInfoSnapshot> SERVER_TO_SERVICE_INFO_SNAPSHOT_ASSOCIATION = BridgeProxyHelper.SERVICE_CACHE;
+    private static int lastOnlineCount = -1;
 
     private BungeeCloudNetHelper() {
         throw new UnsupportedOperationException();
@@ -162,24 +157,11 @@ public final class BungeeCloudNetHelper {
         );
     }
 
+    /**
+     * @deprecated moved to {@link BungeeServerRegisterHelper}
+     */
+    @Deprecated
     public static ServerInfo createServerInfo(String name, InetSocketAddress address) {
-        Preconditions.checkNotNull(name);
-        Preconditions.checkNotNull(address);
-
-        // with rakNet enabled to support bedrock servers on Waterdog
-        if (Wrapper.getInstance().getCurrentServiceInfoSnapshot().getServiceId().getEnvironment() == ServiceEnvironmentType.WATERDOG) {
-            try {
-                Class<ProxyServer> proxyServerClass = ProxyServer.class;
-
-                Method method = proxyServerClass.getMethod("constructServerInfo",
-                        String.class, SocketAddress.class, String.class, boolean.class, boolean.class, String.class);
-                method.setAccessible(true);
-                return (ServerInfo) method.invoke(ProxyServer.getInstance(), name, address, "CloudNet provided serverInfo", false, true, "default");
-            } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException exception) {
-                Wrapper.getInstance().getLogger().log(LogLevel.ERROR, "Unable to enable rakNet, although using Waterdog: ", exception);
-            }
-        }
-
-        return ProxyServer.getInstance().constructServerInfo(name, address, "CloudNet provided serverInfo", false);
+        return BungeeServerRegisterHelper.constructServerInfo(name, address);
     }
 }
