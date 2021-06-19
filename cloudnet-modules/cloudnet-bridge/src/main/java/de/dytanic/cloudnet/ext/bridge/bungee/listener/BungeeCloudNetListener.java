@@ -1,3 +1,19 @@
+/*
+ * Copyright 2019-2021 CloudNetService team & contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package de.dytanic.cloudnet.ext.bridge.bungee.listener;
 
 import de.dytanic.cloudnet.driver.event.EventListener;
@@ -47,138 +63,145 @@ import net.md_5.bungee.api.plugin.Event;
 
 public final class BungeeCloudNetListener {
 
-    @EventListener
-    public void handle(ServiceInfoSnapshotConfigureEvent event) {
-        BungeeCloudNetHelper.initProperties(event.getServiceInfoSnapshot());
-        this.bungeeCall(new BungeeServiceInfoSnapshotConfigureEvent(event.getServiceInfoSnapshot()));
+  @EventListener
+  public void handle(ServiceInfoSnapshotConfigureEvent event) {
+    BungeeCloudNetHelper.initProperties(event.getServiceInfoSnapshot());
+    this.bungeeCall(new BungeeServiceInfoSnapshotConfigureEvent(event.getServiceInfoSnapshot()));
+  }
+
+  @EventListener
+  public void handle(CloudServiceStartEvent event) {
+    if (BungeeCloudNetHelper.isServiceEnvironmentTypeProvidedForBungeeCord(event.getServiceInfo())) {
+      if (event.getServiceInfo().getProperties().contains("Online-Mode") && event.getServiceInfo().getProperties()
+        .getBoolean("Online-Mode")) {
+        return;
+      }
+
+      String name = event.getServiceInfo().getServiceId().getName();
+      BungeeServerRegisterHelper
+        .registerService(name, event.getServiceInfo().getConnectAddress().toInetSocketAddress());
     }
 
-    @EventListener
-    public void handle(CloudServiceStartEvent event) {
-        if (BungeeCloudNetHelper.isServiceEnvironmentTypeProvidedForBungeeCord(event.getServiceInfo())) {
-            if (event.getServiceInfo().getProperties().contains("Online-Mode") && event.getServiceInfo().getProperties().getBoolean("Online-Mode")) {
-                return;
-            }
+    this.bungeeCall(new BungeeCloudServiceStartEvent(event.getServiceInfo()));
+  }
 
-            String name = event.getServiceInfo().getServiceId().getName();
-            BungeeServerRegisterHelper.registerService(name, event.getServiceInfo().getConnectAddress().toInetSocketAddress());
-        }
-
-        this.bungeeCall(new BungeeCloudServiceStartEvent(event.getServiceInfo()));
+  @EventListener
+  public void handle(CloudServiceStopEvent event) {
+    if (BungeeCloudNetHelper.isServiceEnvironmentTypeProvidedForBungeeCord(event.getServiceInfo())) {
+      BungeeServerRegisterHelper.unregisterService(event.getServiceInfo().getName());
+      BridgeProxyHelper.cacheServiceInfoSnapshot(event.getServiceInfo());
     }
 
-    @EventListener
-    public void handle(CloudServiceStopEvent event) {
-        if (BungeeCloudNetHelper.isServiceEnvironmentTypeProvidedForBungeeCord(event.getServiceInfo())) {
-            BungeeServerRegisterHelper.unregisterService(event.getServiceInfo().getName());
-            BridgeProxyHelper.cacheServiceInfoSnapshot(event.getServiceInfo());
-        }
+    this.bungeeCall(new BungeeCloudServiceStopEvent(event.getServiceInfo()));
+  }
 
-        this.bungeeCall(new BungeeCloudServiceStopEvent(event.getServiceInfo()));
+  @EventListener
+  public void handle(CloudServiceInfoUpdateEvent event) {
+    if (BungeeCloudNetHelper.isServiceEnvironmentTypeProvidedForBungeeCord(event.getServiceInfo())) {
+      BridgeProxyHelper.cacheServiceInfoSnapshot(event.getServiceInfo());
     }
 
-    @EventListener
-    public void handle(CloudServiceInfoUpdateEvent event) {
-        if (BungeeCloudNetHelper.isServiceEnvironmentTypeProvidedForBungeeCord(event.getServiceInfo())) {
-            BridgeProxyHelper.cacheServiceInfoSnapshot(event.getServiceInfo());
-        }
+    this.bungeeCall(new BungeeCloudServiceInfoUpdateEvent(event.getServiceInfo()));
+  }
 
-        this.bungeeCall(new BungeeCloudServiceInfoUpdateEvent(event.getServiceInfo()));
+  @EventListener
+  public void handle(CloudServiceRegisterEvent event) {
+    if (BungeeCloudNetHelper.isServiceEnvironmentTypeProvidedForBungeeCord(event.getServiceInfo())) {
+      BridgeProxyHelper.cacheServiceInfoSnapshot(event.getServiceInfo());
     }
 
-    @EventListener
-    public void handle(CloudServiceRegisterEvent event) {
-        if (BungeeCloudNetHelper.isServiceEnvironmentTypeProvidedForBungeeCord(event.getServiceInfo())) {
-            BridgeProxyHelper.cacheServiceInfoSnapshot(event.getServiceInfo());
-        }
+    this.bungeeCall(new BungeeCloudServiceRegisterEvent(event.getServiceInfo()));
+  }
 
-        this.bungeeCall(new BungeeCloudServiceRegisterEvent(event.getServiceInfo()));
+  @EventListener
+  public void handle(CloudServiceConnectNetworkEvent event) {
+    if (BungeeCloudNetHelper.isServiceEnvironmentTypeProvidedForBungeeCord(event.getServiceInfo())) {
+      BridgeProxyHelper.cacheServiceInfoSnapshot(event.getServiceInfo());
     }
 
-    @EventListener
-    public void handle(CloudServiceConnectNetworkEvent event) {
-        if (BungeeCloudNetHelper.isServiceEnvironmentTypeProvidedForBungeeCord(event.getServiceInfo())) {
-            BridgeProxyHelper.cacheServiceInfoSnapshot(event.getServiceInfo());
-        }
+    this.bungeeCall(new BungeeCloudServiceConnectNetworkEvent(event.getServiceInfo()));
+  }
 
-        this.bungeeCall(new BungeeCloudServiceConnectNetworkEvent(event.getServiceInfo()));
+  @EventListener
+  public void handle(CloudServiceDisconnectNetworkEvent event) {
+    if (BungeeCloudNetHelper.isServiceEnvironmentTypeProvidedForBungeeCord(event.getServiceInfo())) {
+      BridgeProxyHelper.cacheServiceInfoSnapshot(event.getServiceInfo());
     }
 
-    @EventListener
-    public void handle(CloudServiceDisconnectNetworkEvent event) {
-        if (BungeeCloudNetHelper.isServiceEnvironmentTypeProvidedForBungeeCord(event.getServiceInfo())) {
-            BridgeProxyHelper.cacheServiceInfoSnapshot(event.getServiceInfo());
-        }
+    this.bungeeCall(new BungeeCloudServiceDisconnectNetworkEvent(event.getServiceInfo()));
+  }
 
-        this.bungeeCall(new BungeeCloudServiceDisconnectNetworkEvent(event.getServiceInfo()));
+  @EventListener
+  public void handle(CloudServiceUnregisterEvent event) {
+    if (BungeeCloudNetHelper.isServiceEnvironmentTypeProvidedForBungeeCord(event.getServiceInfo())) {
+      BridgeProxyHelper.removeCachedServiceInfoSnapshot(event.getServiceInfo());
     }
 
-    @EventListener
-    public void handle(CloudServiceUnregisterEvent event) {
-        if (BungeeCloudNetHelper.isServiceEnvironmentTypeProvidedForBungeeCord(event.getServiceInfo())) {
-            BridgeProxyHelper.removeCachedServiceInfoSnapshot(event.getServiceInfo());
-        }
+    this.bungeeCall(new BungeeCloudServiceUnregisterEvent(event.getServiceInfo()));
+  }
 
-        this.bungeeCall(new BungeeCloudServiceUnregisterEvent(event.getServiceInfo()));
-    }
+  @EventListener
+  public void handle(ChannelMessageReceiveEvent event) {
+    this.bungeeCall(new BungeeChannelMessageReceiveEvent(event));
+  }
 
-    @EventListener
-    public void handle(ChannelMessageReceiveEvent event) {
-        this.bungeeCall(new BungeeChannelMessageReceiveEvent(event));
-    }
+  @EventListener
+  public void handle(NetworkChannelPacketReceiveEvent event) {
+    this.bungeeCall(new BungeeNetworkChannelPacketReceiveEvent(event.getChannel(), event.getPacket()));
+  }
 
-    @EventListener
-    public void handle(NetworkChannelPacketReceiveEvent event) {
-        this.bungeeCall(new BungeeNetworkChannelPacketReceiveEvent(event.getChannel(), event.getPacket()));
-    }
+  @EventListener
+  public void handle(BridgeConfigurationUpdateEvent event) {
+    this.bungeeCall(new BungeeBridgeConfigurationUpdateEvent(event.getBridgeConfiguration()));
+  }
 
-    @EventListener
-    public void handle(BridgeConfigurationUpdateEvent event) {
-        this.bungeeCall(new BungeeBridgeConfigurationUpdateEvent(event.getBridgeConfiguration()));
-    }
+  @EventListener
+  public void handle(BridgeProxyPlayerLoginRequestEvent event) {
+    this.bungeeCall(new BungeeBridgeProxyPlayerLoginRequestEvent(event.getNetworkConnectionInfo()));
+  }
 
-    @EventListener
-    public void handle(BridgeProxyPlayerLoginRequestEvent event) {
-        this.bungeeCall(new BungeeBridgeProxyPlayerLoginRequestEvent(event.getNetworkConnectionInfo()));
-    }
+  @EventListener
+  public void handle(BridgeProxyPlayerLoginSuccessEvent event) {
+    this.bungeeCall(new BungeeBridgeProxyPlayerLoginSuccessEvent(event.getNetworkConnectionInfo()));
+  }
 
-    @EventListener
-    public void handle(BridgeProxyPlayerLoginSuccessEvent event) {
-        this.bungeeCall(new BungeeBridgeProxyPlayerLoginSuccessEvent(event.getNetworkConnectionInfo()));
-    }
+  @EventListener
+  public void handle(BridgeProxyPlayerServerConnectRequestEvent event) {
+    this.bungeeCall(new BungeeBridgeProxyPlayerServerConnectRequestEvent(event.getNetworkConnectionInfo(),
+      event.getNetworkServiceInfo()));
+  }
 
-    @EventListener
-    public void handle(BridgeProxyPlayerServerConnectRequestEvent event) {
-        this.bungeeCall(new BungeeBridgeProxyPlayerServerConnectRequestEvent(event.getNetworkConnectionInfo(), event.getNetworkServiceInfo()));
-    }
+  @EventListener
+  public void handle(BridgeProxyPlayerServerSwitchEvent event) {
+    this.bungeeCall(
+      new BungeeBridgeProxyPlayerServerSwitchEvent(event.getNetworkConnectionInfo(), event.getNetworkServiceInfo()));
+  }
 
-    @EventListener
-    public void handle(BridgeProxyPlayerServerSwitchEvent event) {
-        this.bungeeCall(new BungeeBridgeProxyPlayerServerSwitchEvent(event.getNetworkConnectionInfo(), event.getNetworkServiceInfo()));
-    }
+  @EventListener
+  public void handle(BridgeProxyPlayerDisconnectEvent event) {
+    this.bungeeCall(new BungeeBridgeProxyPlayerDisconnectEvent(event.getNetworkConnectionInfo()));
+  }
 
-    @EventListener
-    public void handle(BridgeProxyPlayerDisconnectEvent event) {
-        this.bungeeCall(new BungeeBridgeProxyPlayerDisconnectEvent(event.getNetworkConnectionInfo()));
-    }
+  @EventListener
+  public void handle(BridgeServerPlayerLoginRequestEvent event) {
+    this.bungeeCall(new BungeeBridgeServerPlayerLoginRequestEvent(event.getNetworkConnectionInfo(),
+      event.getNetworkPlayerServerInfo()));
+  }
 
-    @EventListener
-    public void handle(BridgeServerPlayerLoginRequestEvent event) {
-        this.bungeeCall(new BungeeBridgeServerPlayerLoginRequestEvent(event.getNetworkConnectionInfo(), event.getNetworkPlayerServerInfo()));
-    }
+  @EventListener
+  public void handle(BridgeServerPlayerLoginSuccessEvent event) {
+    this.bungeeCall(new BungeeBridgeServerPlayerLoginSuccessEvent(event.getNetworkConnectionInfo(),
+      event.getNetworkPlayerServerInfo()));
+  }
 
-    @EventListener
-    public void handle(BridgeServerPlayerLoginSuccessEvent event) {
-        this.bungeeCall(new BungeeBridgeServerPlayerLoginSuccessEvent(event.getNetworkConnectionInfo(), event.getNetworkPlayerServerInfo()));
-    }
+  @EventListener
+  public void handle(BridgeServerPlayerDisconnectEvent event) {
+    this.bungeeCall(new BungeeBridgeServerPlayerDisconnectEvent(event.getNetworkConnectionInfo(),
+      event.getNetworkPlayerServerInfo()));
+  }
 
-    @EventListener
-    public void handle(BridgeServerPlayerDisconnectEvent event) {
-        this.bungeeCall(new BungeeBridgeServerPlayerDisconnectEvent(event.getNetworkConnectionInfo(), event.getNetworkPlayerServerInfo()));
-    }
-
-    private void bungeeCall(Event event) {
-        ProxyServer.getInstance().getPluginManager().callEvent(event);
-    }
+  private void bungeeCall(Event event) {
+    ProxyServer.getInstance().getPluginManager().callEvent(event);
+  }
 
 }
