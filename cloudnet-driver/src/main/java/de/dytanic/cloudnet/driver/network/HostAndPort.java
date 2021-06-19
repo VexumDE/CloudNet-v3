@@ -86,13 +86,21 @@ public class HostAndPort implements SerializableObject {
     throw new IllegalArgumentException("socketAddress must be instance of InetSocketAddress!");
   }
 
-  @Override
-  public String toString() {
-    return this.host + ":" + this.port;
+  public String getHost() {
+    return this.host.trim();
+  }
+
+  public int getPort() {
+    return this.port;
   }
 
   public InetSocketAddress toInetSocketAddress() {
     return new InetSocketAddress(this.host, this.port);
+  }
+
+  @Override
+  public String toString() {
+    return this.host + ":" + this.port;
   }
 
   @Override
