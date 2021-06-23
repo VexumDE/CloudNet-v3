@@ -40,6 +40,7 @@ import de.dytanic.cloudnet.driver.service.ServiceTemplate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 public class CommandCreate extends SubCommandHandler {
@@ -229,6 +230,7 @@ public class CommandCreate extends SubCommandHandler {
           properties.getOrDefault("autoDeleteOnStop", String.valueOf(autoDeleteOnStop)).equalsIgnoreCase("true"),
           properties.getOrDefault("static", String.valueOf(staticServices)).equalsIgnoreCase("true"),
           properties.containsKey("node") ? Arrays.asList(properties.get("node").split(";")) : nodes,
+          Collections.emptyList(),
           properties.containsKey("groups") ? Arrays.asList(properties.get("groups").split(";")) : groups,
           properties.containsKey("deletedFilesAfterStop") ? Arrays
             .asList(properties.get("deletedFilesAfterStop").split(";")) : deletedFilesAfterStop,

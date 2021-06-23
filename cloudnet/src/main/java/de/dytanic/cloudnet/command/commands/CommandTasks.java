@@ -181,6 +181,7 @@ public class CommandTasks extends CommandServiceConfigurationBase {
               new ArrayList<>(
                 Collections.singletonList(CloudNet.getInstance().getConfig().getIdentity().getUniqueId())),
               new ArrayList<>(Collections.singletonList(name)),
+              new ArrayList<>(),
               new ProcessConfiguration(
                 type,
                 type.isMinecraftProxy() ? 256 : 512,

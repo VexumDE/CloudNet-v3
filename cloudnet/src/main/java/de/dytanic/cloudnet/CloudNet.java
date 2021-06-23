@@ -680,38 +680,38 @@ public final class CloudNet extends CloudNetDriver {
   }
 
   public boolean canStartServices(ServiceTask serviceTask, String nodeUniqueId) {
-    return this.canStartServices(serviceTask.getAssociatedNodes(), nodeUniqueId);
+    return this.canStartServices(serviceTask.getAssociatedNodes(), serviceTask.getBlockedNodes(), nodeUniqueId);
   }
 
   public boolean canStartServices(ServiceTask serviceTask) {
-    return this.canStartServices(serviceTask.getAssociatedNodes());
+    return this.canStartServices(serviceTask.getAssociatedNodes(), serviceTask.getBlockedNodes());
   }
 
   public Collection<IClusterNodeServer> getValidClusterNodeServers(ServiceTask serviceTask) {
-    return this.getValidClusterNodeServers(serviceTask.getAssociatedNodes());
+    return this.getValidClusterNodeServers(serviceTask.getAssociatedNodes(), serviceTask.getBlockedNodes());
   }
 
   @Nullable
   public NetworkClusterNodeInfoSnapshot searchLogicNode(ServiceTask serviceTask) {
     Preconditions.checkNotNull(serviceTask);
 
-    return this.searchLogicNode(serviceTask.getAssociatedNodes());
+    return this.searchLogicNode(serviceTask.getAssociatedNodes(), serviceTask.getBlockedNodes());
   }
 
   @Nullable
   public NodeServer searchLogicNodeServer(ServiceTask serviceTask) {
     Preconditions.checkNotNull(serviceTask);
 
-    return this.searchLogicNodeServer(serviceTask.getAssociatedNodes(),
-      serviceTask.getProcessConfiguration().getMaxHeapMemorySize());
+    return this.searchLogicNodeServer(
+      serviceTask.getAssociatedNodes(), serviceTask.getBlockedNodes(), serviceTask.getProcessConfiguration().getMaxHeapMemorySize());
   }
 
   @Nullable
-  public NodeServer searchLogicNodeServer(Collection<String> allowedNodes, int maxHeapMemory) {
+  public NodeServer searchLogicNodeServer(Collection<String> allowedNodes, Collection<String> blockedNodes, int maxHeapMemory) {
     Preconditions.checkNotNull(allowedNodes);
 
-    Collection<NodeServer> nodes = new ArrayList<>(this.getValidClusterNodeServers(allowedNodes));
-    if (this.canStartServices(allowedNodes)) {
+    Collection<NodeServer> nodes = new ArrayList<>(this.getValidClusterNodeServers(allowedNodes, blockedNodes));
+    if (this.canStartServices(allowedNodes, blockedNodes)) {
       nodes.add(this.clusterNodeServerProvider.getSelfNode());
     }
 
@@ -731,30 +731,34 @@ public final class CloudNet extends CloudNetDriver {
       .orElse(null);
   }
 
-  public boolean canStartServices(Collection<String> allowedNodes, String nodeUniqueId) {
+  public boolean canStartServices(Collection<String> allowedNodes, Collection<String> blockedNodes, String nodeUniqueId) {
+    if (blockedNodes != null && blockedNodes.contains(nodeUniqueId)) {
+      return false;
+    }
+
     return allowedNodes != null && (allowedNodes.isEmpty() || allowedNodes.contains(nodeUniqueId));
   }
 
-  public boolean canStartServices(Collection<String> allowedNodes) {
-    return this.canStartServices(allowedNodes, this.getConfig().getIdentity().getUniqueId());
+  public boolean canStartServices(Collection<String> allowedNodes, Collection<String> blockedNodes) {
+    return this.canStartServices(allowedNodes, blockedNodes, this.getConfig().getIdentity().getUniqueId());
   }
 
-  public Collection<IClusterNodeServer> getValidClusterNodeServers(Collection<String> allowedNodes) {
+  public Collection<IClusterNodeServer> getValidClusterNodeServers(Collection<String> allowedNodes, Collection<String> blockedNodes) {
     return this.clusterNodeServerProvider.getNodeServers()
       .stream()
       .filter(IClusterNodeServer::isConnected)
       .filter(server -> server.getNodeInfoSnapshot() != null)
-      .filter(clusterNodeServer -> this.canStartServices(allowedNodes, clusterNodeServer.getNodeInfo().getUniqueId()))
+      .filter(clusterNodeServer -> this.canStartServices(allowedNodes, blockedNodes, clusterNodeServer.getNodeInfo().getUniqueId()))
       .collect(Collectors.toList());
   }
 
   @Nullable
-  public NetworkClusterNodeInfoSnapshot searchLogicNode(Collection<String> allowedNodes) {
-    Collection<NetworkClusterNodeInfoSnapshot> nodes = this.getValidClusterNodeServers(allowedNodes).stream()
+  public NetworkClusterNodeInfoSnapshot searchLogicNode(Collection<String> allowedNodes, Collection<String> blockedNodes) {
+    Collection<NetworkClusterNodeInfoSnapshot> nodes = this.getValidClusterNodeServers(allowedNodes, blockedNodes).stream()
       .map(IClusterNodeServer::getNodeInfoSnapshot)
       .collect(Collectors.toList());
 
-    if (this.canStartServices(allowedNodes)) {
+    if (this.canStartServices(allowedNodes, blockedNodes)) {
       nodes.add(this.clusterNodeServerProvider.getSelfNode().getNodeInfoSnapshot());
     }
 
@@ -768,9 +772,9 @@ public final class CloudNet extends CloudNetDriver {
 
   @Nullable
   public Pair<NodeServer, Set<ServiceInfoSnapshot>> searchLogicNodeServer(
-    Map<String, Set<ServiceInfoSnapshot>> services) {
-    Collection<NodeServer> nodes = new ArrayList<>(this.getValidClusterNodeServers(services.keySet()));
-    if (this.canStartServices(services.keySet())) {
+    ServiceTask task, Map<String, Set<ServiceInfoSnapshot>> services) {
+    Collection<NodeServer> nodes = new ArrayList<>(this.getValidClusterNodeServers(services.keySet(), task.getBlockedNodes()));
+    if (this.canStartServices(services.keySet(), task.getBlockedNodes())) {
       nodes.add(this.clusterNodeServerProvider.getSelfNode());
     }
 
@@ -801,12 +805,12 @@ public final class CloudNet extends CloudNetDriver {
 
   @Deprecated
   public boolean competeWithCluster(ServiceTask serviceTask) {
-    return this.competeWithCluster(serviceTask.getAssociatedNodes());
+    return this.competeWithCluster(serviceTask.getAssociatedNodes(), serviceTask.getBlockedNodes());
   }
 
   @Deprecated
-  public boolean competeWithCluster(Collection<String> allowedNodes) {
-    NetworkClusterNodeInfoSnapshot bestNode = this.searchLogicNode(allowedNodes);
+  public boolean competeWithCluster(Collection<String> allowedNodes, Collection<String> blockedNodes) {
+    NetworkClusterNodeInfoSnapshot bestNode = this.searchLogicNode(allowedNodes, blockedNodes);
     return bestNode != null && bestNode.getNode().getUniqueId().equals(this.config.getIdentity().getUniqueId());
   }
 

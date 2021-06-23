@@ -107,7 +107,7 @@ public class CloudNetTick {
 
         if (serviceTask.getMinServiceCount() > runningServicesCount) {
           // checking if there is a prepared service that can be started instead of creating a new service
-          if (this.startPreparedService(taskServices)) {
+          if (this.startPreparedService(serviceTask, taskServices)) {
             return;
           }
           // start a new service if no service is available
@@ -123,13 +123,13 @@ public class CloudNetTick {
     }
   }
 
-  private boolean startPreparedService(@NotNull Collection<ServiceInfoSnapshot> taskServices) {
+  private boolean startPreparedService(@NotNull ServiceTask task, @NotNull Collection<ServiceInfoSnapshot> taskServices) {
     Map<String, Set<ServiceInfoSnapshot>> preparedServices = taskServices.stream()
       .filter(taskService -> taskService.getLifeCycle() == ServiceLifeCycle.PREPARED)
       .collect(Collectors.groupingBy(info -> info.getServiceId().getNodeUniqueId(), Collectors.toSet()));
 
     if (!preparedServices.isEmpty()) {
-      Pair<NodeServer, Set<ServiceInfoSnapshot>> logicServices = this.cloudNet.searchLogicNodeServer(preparedServices);
+      Pair<NodeServer, Set<ServiceInfoSnapshot>> logicServices = this.cloudNet.searchLogicNodeServer(task, preparedServices);
       if (logicServices != null && !logicServices.getSecond().isEmpty()) {
         Set<ServiceInfoSnapshot> services = logicServices.getSecond();
         if (services.size() == 1) {

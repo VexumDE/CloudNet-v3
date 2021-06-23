@@ -78,7 +78,7 @@ public class NodeCloudServiceFactory extends DefaultCloudServiceFactory implemen
       }
 
       nodeServer = this.cloudNet
-        .searchLogicNodeServer(allowedNodes, serviceConfiguration.getProcessConfig().getMaxHeapMemorySize());
+        .searchLogicNodeServer(allowedNodes, Collections.emptyList(), serviceConfiguration.getProcessConfig().getMaxHeapMemorySize());
     } else {
       String nodeUniqueId = serviceConfiguration.getServiceId().getNodeUniqueId();
       if (this.cloudNet.getClusterNodeServerProvider().getSelfNode().getNodeInfo().getUniqueId().equals(nodeUniqueId)) {

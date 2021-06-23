@@ -19,12 +19,13 @@ package de.dytanic.cloudnet.driver.service;
 import de.dytanic.cloudnet.common.INameable;
 import de.dytanic.cloudnet.driver.serialization.ProtocolBuffer;
 import de.dytanic.cloudnet.driver.serialization.SerializableObject;
-import java.util.ArrayList;
-import java.util.Collection;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = false)
@@ -40,6 +41,7 @@ public class ServiceTask extends ServiceConfigurationBase implements INameable, 
   private boolean staticServices;
 
   private Collection<String> associatedNodes = new ArrayList<>();
+  private Collection<String> blockedNodes = new ArrayList<>();
   private Collection<String> groups = new ArrayList<>();
   private Collection<String> deletedFilesAfterStop = new ArrayList<>();
 
@@ -54,57 +56,58 @@ public class ServiceTask extends ServiceConfigurationBase implements INameable, 
   private transient long serviceStartAbilityTime = -1;
 
   public ServiceTask(Collection<ServiceRemoteInclusion> includes, Collection<ServiceTemplate> templates,
-    Collection<ServiceDeployment> deployments,
-    String name, String runtime, boolean autoDeleteOnStop, boolean staticServices, Collection<String> associatedNodes,
-    Collection<String> groups,
-    ProcessConfiguration processConfiguration, int startPort, int minServiceCount) {
+                     Collection<ServiceDeployment> deployments,
+                     String name, String runtime, boolean autoDeleteOnStop, boolean staticServices,
+                     Collection<String> associatedNodes, Collection<String> blockedNodes, Collection<String> groups,
+                     ProcessConfiguration processConfiguration, int startPort, int minServiceCount) {
     this(includes, templates, deployments, name, runtime, false, autoDeleteOnStop,
-      staticServices, associatedNodes, groups, processConfiguration, startPort, minServiceCount);
+      staticServices, associatedNodes, blockedNodes, groups, processConfiguration, startPort, minServiceCount);
   }
 
   public ServiceTask(Collection<ServiceRemoteInclusion> includes, Collection<ServiceTemplate> templates,
-    Collection<ServiceDeployment> deployments,
-    String name, String runtime, boolean autoDeleteOnStop, boolean staticServices, Collection<String> associatedNodes,
-    Collection<String> groups,
-    Collection<String> deletedFilesAfterStop, ProcessConfiguration processConfiguration, int startPort,
-    int minServiceCount) {
-    this(includes, templates, deployments, name, runtime, false, autoDeleteOnStop, staticServices, associatedNodes,
+                     Collection<ServiceDeployment> deployments,
+                     String name, String runtime, boolean autoDeleteOnStop, boolean staticServices,
+                     Collection<String> associatedNodes, Collection<String> blockedNodes, Collection<String> groups,
+                     Collection<String> deletedFilesAfterStop, ProcessConfiguration processConfiguration, int startPort,
+                     int minServiceCount) {
+    this(includes, templates, deployments, name, runtime, false, autoDeleteOnStop, staticServices, associatedNodes, blockedNodes,
       groups, deletedFilesAfterStop, processConfiguration, startPort, minServiceCount);
   }
 
   public ServiceTask(Collection<ServiceRemoteInclusion> includes, Collection<ServiceTemplate> templates,
-    Collection<ServiceDeployment> deployments,
-    String name, String runtime, boolean autoDeleteOnStop, boolean staticServices, Collection<String> associatedNodes,
-    Collection<String> groups,
-    Collection<String> deletedFilesAfterStop, ProcessConfiguration processConfiguration, int startPort,
-    int minServiceCount, String javaCommand) {
-    this(includes, templates, deployments, name, runtime, false, autoDeleteOnStop, staticServices, associatedNodes,
+                     Collection<ServiceDeployment> deployments,
+                     String name, String runtime, boolean autoDeleteOnStop, boolean staticServices, Collection<String> associatedNodes,
+                     Collection<String> blockedNodes, Collection<String> groups,
+                     Collection<String> deletedFilesAfterStop, ProcessConfiguration processConfiguration, int startPort,
+                     int minServiceCount, String javaCommand) {
+    this(includes, templates, deployments, name, runtime, false, autoDeleteOnStop, staticServices, associatedNodes, blockedNodes,
       groups, deletedFilesAfterStop, processConfiguration, startPort, minServiceCount, javaCommand);
   }
 
   public ServiceTask(Collection<ServiceRemoteInclusion> includes, Collection<ServiceTemplate> templates,
-    Collection<ServiceDeployment> deployments,
-    String name, String runtime, boolean maintenance, boolean autoDeleteOnStop, boolean staticServices,
-    Collection<String> associatedNodes, Collection<String> groups,
-    ProcessConfiguration processConfiguration, int startPort, int minServiceCount) {
+                     Collection<ServiceDeployment> deployments,
+                     String name, String runtime, boolean maintenance, boolean autoDeleteOnStop, boolean staticServices,
+                     Collection<String> associatedNodes, Collection<String> blockedNodes, Collection<String> groups,
+                     ProcessConfiguration processConfiguration, int startPort, int minServiceCount) {
     this(includes, templates, deployments, name, runtime, maintenance, autoDeleteOnStop, staticServices,
-      associatedNodes, groups, new ArrayList<>(), processConfiguration, startPort, minServiceCount);
+      associatedNodes, blockedNodes, groups, new ArrayList<>(), processConfiguration, startPort, minServiceCount);
   }
 
   public ServiceTask(Collection<ServiceRemoteInclusion> includes, Collection<ServiceTemplate> templates,
-    Collection<ServiceDeployment> deployments,
-    String name, String runtime, boolean maintenance, boolean autoDeleteOnStop, boolean staticServices,
-    Collection<String> associatedNodes, Collection<String> groups,
-    Collection<String> deletedFilesAfterStop, ProcessConfiguration processConfiguration, int startPort,
-    int minServiceCount) {
+                     Collection<ServiceDeployment> deployments,
+                     String name, String runtime, boolean maintenance, boolean autoDeleteOnStop, boolean staticServices,
+                     Collection<String> associatedNodes, Collection<String> blockedNodes, Collection<String> groups,
+                     Collection<String> deletedFilesAfterStop, ProcessConfiguration processConfiguration, int startPort,
+                     int minServiceCount) {
     this(includes, templates, deployments, name, runtime, maintenance, autoDeleteOnStop, staticServices,
-      associatedNodes, groups, deletedFilesAfterStop, processConfiguration, startPort, minServiceCount, null);
+      associatedNodes, blockedNodes, groups, deletedFilesAfterStop, processConfiguration, startPort, minServiceCount, null);
   }
 
-  public ServiceTask(Collection<ServiceRemoteInclusion> includes, Collection<ServiceTemplate> templates,
+  public ServiceTask(
+    Collection<ServiceRemoteInclusion> includes, Collection<ServiceTemplate> templates,
     Collection<ServiceDeployment> deployments,
     String name, String runtime, boolean maintenance, boolean autoDeleteOnStop, boolean staticServices,
-    Collection<String> associatedNodes, Collection<String> groups,
+    Collection<String> associatedNodes, Collection<String> blockedNodes, Collection<String> groups,
     Collection<String> deletedFilesAfterStop, ProcessConfiguration processConfiguration, int startPort,
     int minServiceCount, String javaCommand) {
     super(includes, templates, deployments);
@@ -113,6 +116,7 @@ public class ServiceTask extends ServiceConfigurationBase implements INameable, 
     this.maintenance = maintenance;
     this.autoDeleteOnStop = autoDeleteOnStop;
     this.associatedNodes = associatedNodes;
+    this.blockedNodes = blockedNodes;
     this.groups = groups;
     this.deletedFilesAfterStop = deletedFilesAfterStop;
     this.processConfiguration = processConfiguration;
@@ -214,6 +218,14 @@ public class ServiceTask extends ServiceConfigurationBase implements INameable, 
     this.associatedNodes = associatedNodes;
   }
 
+  public Collection<String> getBlockedNodes() {
+    return this.blockedNodes;
+  }
+
+  public void setBlockedNodes(Collection<String> blockedNodes) {
+    this.blockedNodes = blockedNodes;
+  }
+
   public Collection<String> getGroups() {
     return this.groups;
   }
@@ -265,6 +277,7 @@ public class ServiceTask extends ServiceConfigurationBase implements INameable, 
       this.autoDeleteOnStop,
       this.staticServices,
       new ArrayList<>(this.associatedNodes),
+      new ArrayList<>(this.blockedNodes),
       new ArrayList<>(this.groups),
       new ArrayList<>(this.deletedFilesAfterStop),
       new ProcessConfiguration(
@@ -290,6 +303,7 @@ public class ServiceTask extends ServiceConfigurationBase implements INameable, 
     buffer.writeBoolean(this.autoDeleteOnStop);
     buffer.writeBoolean(this.staticServices);
     buffer.writeStringCollection(this.associatedNodes);
+    buffer.writeStringCollection(this.blockedNodes);
     buffer.writeStringCollection(this.groups);
     buffer.writeStringCollection(this.deletedFilesAfterStop);
     buffer.writeObject(this.processConfiguration);
@@ -308,6 +322,7 @@ public class ServiceTask extends ServiceConfigurationBase implements INameable, 
     this.autoDeleteOnStop = buffer.readBoolean();
     this.staticServices = buffer.readBoolean();
     this.associatedNodes = buffer.readStringCollection();
+    this.blockedNodes = buffer.readStringCollection();
     this.groups = buffer.readStringCollection();
     this.deletedFilesAfterStop = buffer.readStringCollection();
     this.processConfiguration = buffer.readObject(ProcessConfiguration.class);

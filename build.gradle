@@ -103,8 +103,6 @@ allprojects {
     testJunitVersion = '4.13.2'
     testBcpkixJdk15OnVersion = '1.69'
 
-    buildCheckstyleToolVersion = '8.43'
-
     //file
     cloudnetLauncherFile = 'launcher.jar'
     cloudnetCommonFile = 'common.jar'
@@ -186,7 +184,6 @@ subprojects {
   if (project.name == 'cloudnet-modules' || project.name == 'cloudnet-plugins') return
 
   apply plugin: 'java'
-  apply plugin: 'checkstyle'
   apply plugin: 'java-library'
   apply plugin: 'maven-publish'
   apply plugin: 'org.cadixdev.licenser'
@@ -206,16 +203,6 @@ subprojects {
   license {
     include '**/*.java'
     header = project.rootProject.file('LICENSE_HEADER')
-  }
-
-  checkstyle {
-    toolVersion = project.ext.buildCheckstyleToolVersion
-  }
-
-  tasks.withType(Checkstyle) {
-    maxErrors = 0
-    maxWarnings = 0
-    configFile = project.rootProject.file('checkstyle.xml')
   }
 
   sourceCompatibility = 1.8

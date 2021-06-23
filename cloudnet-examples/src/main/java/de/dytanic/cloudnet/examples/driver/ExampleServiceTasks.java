@@ -49,6 +49,7 @@ public final class ExampleServiceTasks {
       true,
       //The service won't be deleted fully and will store in the configured directory. The default is /local/services
       new ArrayList<>(), //node ids
+      new ArrayList<>(), //blocked node ids
       new ArrayList<>(Collections.singletonList("TestTask")), //groups
       new ProcessConfiguration(
         ServiceEnvironmentType.MINECRAFT_SERVER, //environement type
